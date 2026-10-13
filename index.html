@@ -4,89 +4,325 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Halal Compass Pro</title>
-
-    <!-- PWA Settings (เปิดเต็มจอแบบแอปแท้) -->
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#022c22">
-    <link rel="manifest" href='data:application/manifest+json,{"name": "Halal Compass Pro", "short_name": "HalalCompass", "start_url": ".", "display": "standalone", "background_color": "#022c22", "theme_color": "#059669"}'>
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Plus Jakarta Sans', 'Prompt', sans-serif; }</style>
-</head>
-<body class="bg-gradient-to-br from-emerald-950 via-teal-950 to-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-3 sm:p-4">
-
-    <div class="max-w-md w-full bg-slate-900/90 backdrop-blur-xl rounded-3xl p-5 border border-emerald-500/30 shadow-2xl relative overflow-hidden">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #0f172a; color: #f8fafc; padding: 15px; display: flex; justify-content: center; min-height: 100vh; }
+        .app-box { width: 100%; max-width: 400px; background-color: #1e293b; border-radius: 20px; padding: 18px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
         
-        <!-- Header & Language Selector -->
-        <div class="flex justify-between items-center mb-4 relative z-10">
+        /* Quran Verse Box */
+        .quran-box { background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%); border: 1px solid #3b82f6; padding: 12px; border-radius: 14px; text-align: center; margin-bottom: 15px; }
+        .quran-arabic { font-size: 16px; color: #fbbf24; font-weight: bold; margin-bottom: 6px; line-height: 1.4; }
+        .quran-translate { font-size: 11px; color: #bae6fd; font-style: italic; }
+
+        /* Header */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .title-sub { font-size: 11px; color: #38bdf8; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+        .title-main { font-size: 20px; font-weight: bold; color: #ffffff; }
+        .live-clock { font-size: 12px; color: #fbbf24; font-weight: bold; margin-top: 3px; }
+        .lang-group { display: flex; gap: 4px; background: #0f172a; padding: 3px; border-radius: 10px; }
+        .lang-btn { background: transparent; border: none; color: #94a3b8; padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .lang-btn.active { background: #3b82f6; color: #fff; }
+
+        /* GPS Banner Alert */
+        .gps-alert { background: #0f172a; border: 1px dashed #3b82f6; padding: 10px; border-radius: 12px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .gps-alert-text { font-size: 11px; color: #bae6fd; }
+        .btn-gps-alert { background: #3b82f6; color: #fff; border: none; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap; }
+
+        /* Card */
+        .card { background-color: #334155; border-radius: 14px; padding: 14px; margin-bottom: 15px; border: 1px solid #475569; }
+        
+        /* Prayer Times */
+        .prayer-row { display: flex; gap: 4px; justify-content: space-between; margin-bottom: 12px; }
+        .prayer-item { background-color: #1e293b; padding: 8px 2px; border-radius: 8px; flex: 1; text-align: center; font-size: 11px; color: #94a3b8; }
+        .prayer-item strong { display: block; color: #38bdf8; font-size: 12px; margin-top: 2px; }
+        .prayer-item.active { background-color: #3b82f6; color: #fff; }
+        .prayer-item.active strong { color: #fff; }
+
+        /* Prayer Notification Settings */
+        .notif-settings { border-top: 1px solid #475569; padding-top: 10px; }
+        .notif-title { font-size: 12px; color: #fbbf24; margin-bottom: 6px; font-weight: bold; }
+        .notif-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; font-size: 11px; }
+        .notif-item { display: flex; align-items: center; gap: 4px; background: #1e293b; padding: 4px 6px; border-radius: 6px; cursor: pointer; color: #cbd5e1; }
+
+        /* Grid Menu (2x2, No Scrollbar) */
+        .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 15px; }
+        .tab-btn { background-color: #1e293b; border: 1px solid #475569; color: #cbd5e1; padding: 12px 10px; border-radius: 12px; font-size: 13px; font-weight: bold; cursor: pointer; text-align: center; }
+        .tab-btn.active { background-color: #3b82f6; color: #fff; border-color: #3b82f6; }
+
+        /* Views Content */
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+
+        /* Compass */
+        .compass-box { text-align: center; padding: 10px 0; }
+        .compass-circle { width: 140px; height: 140px; border: 4px solid #3b82f6; border-radius: 50%; margin: 15px auto; position: relative; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #334155 0%, #1e293b 100%); }
+        .needle { width: 6px; height: 70px; background: linear-gradient(to top, #38bdf8, #fbbf24); position: absolute; transform-origin: bottom center; bottom: 50%; border-radius: 3px; transition: transform 0.5s ease; }
+        .status-msg { font-size: 12px; color: #38bdf8; margin-top: 5px; }
+
+        /* Location List Items */
+        .list-item { background: #1e293b; padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 13px; border-left: 3px solid #3b82f6; }
+        .list-item span { font-size: 11px; color: #94a3b8; display: block; margin-top: 2px; }
+        .btn-more { width: 100%; background: #1e293b; border: 1px solid #3b82f6; color: #38bdf8; padding: 9px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; margin-top: 5px; text-align: center; display: block; text-decoration: none; }
+
+        /* Zikr Counter */
+        .zikr-box { text-align: center; padding: 15px; }
+        .counter-num { font-size: 36px; font-weight: bold; color: #fbbf24; margin: 10px 0; }
+        .btn-count { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 25px; font-size: 15px; font-weight: bold; cursor: pointer; }
+        .btn-reset { background: #475569; color: #cbd5e1; border: none; padding: 5px 10px; border-radius: 6px; font-size: 11px; margin-top: 8px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="app-box">
+        <!-- Quran Verse Box (Random Text Ready) -->
+        <div class="quran-box">
+            <div class="quran-arabic" id="quran-ar">فَٱذْكُرُونِيٓ أَذْكُرْكُمْ وَٱشْكُرُوا۟ لِي وَلَا تَكْفُرُونِ</div>
+            <div class="quran-translate" id="quran-trans">"ดังนั้นพวกเจ้าจงรำลึกถึงข้า ข้าก็จะรำลึกถึงพวกเจ้า" (อัล-บะเกาะเราะฮ์: 152)</div>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
             <div>
-                <p class="text-[10px] text-amber-400 font-bold uppercase tracking-wider">Islamic Utility App</p>
-                <h1 class="text-xl font-bold text-white flex items-center gap-2">
-                    Halal Compass <span class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full">Pro</span>
-                </h1>
+                <div class="title-sub" id="txt-sub">Islamic Utility App</div>
+                <div class="title-main">Halal Compass <span style="color:#fbbf24; font-size:14px;">PRO</span></div>
+                <div class="live-clock" id="live-clock">🕒 เวลาปัจจุบัน: 00:00:00</div>
             </div>
-            <div class="flex gap-1 bg-slate-800/80 p-1 rounded-xl border border-slate-700">
-                <button onclick="setLanguage('th')" id="lang-th" class="px-2 py-1 text-[10px] font-bold rounded-lg bg-emerald-500 text-slate-950 transition">TH</button>
-                <button onclick="setLanguage('en')" id="lang-en" class="px-2 py-1 text-[10px] font-bold rounded-lg text-slate-400 hover:text-white transition">EN</button>
-                <button onclick="setLanguage('ms')" id="lang-ms" class="px-2 py-1 text-[10px] font-bold rounded-lg text-slate-400 hover:text-white transition">MS</button>
-            </div>
-        </div>
-
-        <!-- Prayer Times Section -->
-        <div class="bg-slate-900/80 border border-emerald-500/30 p-3.5 rounded-2xl mb-4 shadow-lg relative z-10">
-            <div class="flex justify-between items-center mb-2">
-                <span class="text-xs font-semibold text-emerald-400 flex items-center gap-1">
-                    🕌 <span data-i18n="prayer_title">เวลาละหมาดวันนี้</span>
-                </span>
-                <button onclick="updateLocation()" class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-1 rounded-full flex items-center gap-1">
-                    📍 <span data-i18n="gps_btn">รีเฟรช GPS</span>
-                </button>
-            </div>
-            <div class="grid grid-cols-5 gap-1.5 text-center text-xs">
-                <div class="p-1.5 bg-slate-800/80 rounded-xl border border-slate-700/60"><p class="text-slate-400 text-[10px]" data-i18n="fajr">ซุบฮิ</p><p id="fajrTime" class="font-bold text-emerald-300 text-xs">--:--</p></div>
-                <div class="p-1.5 bg-slate-800/80 rounded-xl border border-slate-700/60"><p class="text-slate-400 text-[10px]" data-i18n="dhuhr">ซุฮฺริ</p><p id="dhuhrTime" class="font-bold text-emerald-300 text-xs">--:--</p></div>
-                <div class="p-1.5 bg-emerald-600/30 rounded-xl border border-emerald-500/50"><p class="text-emerald-300 text-[10px] font-semibold" data-i18n="asr">อัศริ</p><p id="asrTime" class="font-extrabold text-white text-xs">--:--</p></div>
-                <div class="p-1.5 bg-slate-800/80 rounded-xl border border-slate-700/60"><p class="text-slate-400 text-[10px]" data-i18n="maghrib">มักริบ</p><p id="maghribTime" class="font-bold text-emerald-300 text-xs">--:--</p></div>
-                <div class="p-1.5 bg-slate-800/80 rounded-xl border border-slate-700/60"><p class="text-slate-400 text-[10px]" data-i18n="isha">อิชาอ์</p><p id="ishaTime" class="font-bold text-emerald-300 text-xs">--:--</p></div>
+            <div class="lang-group">
+                <button class="lang-btn active" id="btn-th" onclick="setLanguage('th')">TH</button>
+                <button class="lang-btn" id="btn-en" onclick="setLanguage('en')">EN</button>
+                <button class="lang-btn" id="btn-ms" onclick="setLanguage('ms')">MS</button>
             </div>
         </div>
 
-        <!-- Navigation Tabs -->
-        <div class="flex gap-1.5 mb-3 relative z-10 overflow-x-auto pb-1">
-            <button onclick="switchTab('qibla')" id="tabQibla" class="py-2 px-3 rounded-xl text-xs font-bold bg-emerald-500 text-slate-950 transition whitespace-nowrap shadow-md">🧭 <span data-i18n="tab_qibla">ทิศกิบลัต</span></button>
-            <button onclick="switchTab('food')" id="tabFood" class="py-2 px-3 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 transition whitespace-nowrap">🍲 <span data-i18n="tab_food">ร้านฮาลาล</span></button>
-            <button onclick="switchTab('mosque')" id="tabMosque" class="py-2 px-3 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 transition whitespace-nowrap">🕌 <span data-i18n="tab_mosque">มัสยิด</span></button>
-            <button onclick="switchTab('tasbih')" id="tabTasbih" class="py-2 px-3 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 transition whitespace-nowrap">📿 <span data-i18n="tab_tasbih">ซิเกร</span></button>
+        <!-- GPS Alert Banner -->
+        <div class="gps-alert" id="gps-banner">
+            <div class="gps-alert-text" id="txt-gps-banner">📍 เปิด GPS เพื่อเชื่อมต่อพิกัดและทิศทางแม่นยำ</div>
+            <button class="btn-gps-alert" onclick="requestGPS()">เปิด GPS</button>
         </div>
 
-        <!-- Qibla Compass Container -->
-        <div id="qiblaContainer" class="bg-slate-800/80 border border-slate-700 p-5 rounded-2xl text-center relative z-10 mb-3">
-            <p class="text-xs text-amber-300 font-semibold mb-1" data-i18n="qibla_heading">🕋 ทิศกิบลัต (ทิศสู่นครมักกะฮ์)</p>
-            <p class="text-[11px] text-slate-400 mb-3"><span data-i18n="qibla_deg">องศากิบลัตจากตำแหน่งคุณ:</span> <span class="text-emerald-400 font-bold" id="qiblaDegreeVal">--°</span></p>
-            <div class="relative w-36 h-36 mx-auto my-2 flex items-center justify-center bg-slate-950 rounded-full border-4 border-emerald-500/40 shadow-inner">
-                <div id="compassNeedle" class="w-full h-full absolute top-0 left-0 flex items-center justify-center transition-transform duration-300">
-                    <div class="w-2 h-16 bg-gradient-to-t from-transparent via-emerald-400 to-amber-400 rounded-full shadow-lg"></div>
+        <!-- Prayer Times Card -->
+        <div class="card">
+            <div style="font-size: 14px; font-weight: bold; margin-bottom:10px;" id="txt-prayer-title">🕌 เวลาละหมาดวันนี้</div>
+            <div class="prayer-row">
+                <div class="prayer-item"><span id="p-fajr">ซุบฮี</span><strong>05:10</strong></div>
+                <div class="prayer-item"><span id="p-dhuhr">ซุฮริ</span><strong>12:20</strong></div>
+                <div class="prayer-item active"><span id="p-asr">อัศริ</span><strong>15:40</strong></div>
+                <div class="prayer-item"><span id="p-maghrib">มักริบ</span><strong>18:15</strong></div>
+                <div class="prayer-item"><span id="p-isha">อิชาอ์</span><strong>19:30</strong></div>
+            </div>
+
+            <div class="notif-settings">
+                <div class="notif-title" id="txt-notif-head">🔔 ตั้งค่าแจ้งเตือนเฉพาะเวลาละหมาด:</div>
+                <div class="notif-grid">
+                    <label class="notif-item"><input type="checkbox" checked> <span id="n-fajr">ซุบฮี</span></label>
+                    <label class="notif-item"><input type="checkbox" checked> <span id="n-dhuhr">ซุฮริ</span></label>
+                    <label class="notif-item"><input type="checkbox" checked> <span id="n-asr">อัศริ</span></label>
+                    <label class="notif-item"><input type="checkbox" checked> <span id="n-maghrib">มักริบ</span></label>
+                    <label class="notif-item"><input type="checkbox" checked> <span id="n-isha">อิชาอ์</span></label>
                 </div>
             </div>
-            <p class="text-[10px] text-slate-500 mt-2" data-i18n="compass_hint">*หมุนโทรศัพท์เพื่อปรับทิศทางตามวงเข็มทิศ</p>
         </div>
 
-        <!-- Places List Container -->
-        <div id="placeContainer" class="hidden relative z-10 mb-3">
-            <div id="placeList" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
-            <a id="mapsSearchBtn" href="#" target="_blank" class="w-full bg-slate-800 hover:bg-slate-700 border border-emerald-500/30 text-emerald-300 text-xs font-semibold py-2.5 px-4 rounded-xl transition flex items-center justify-center gap-2 mt-2">
-                🗺️ <span data-i18n="google_maps_btn">ค้นหาเพิ่มเติมบน Google Maps</span>
-            </a>
+        <!-- Grid Menu (2x2, No Scrollbar) -->
+        <div class="menu-grid">
+            <button class="tab-btn active" id="tab-qibla" onclick="switchTab('qibla')">🧭 ทิศกิบลัต</button>
+            <button class="tab-btn" id="tab-halal" onclick="switchTab('halal')">🍲 ร้านฮาลาล</button>
+            <button class="tab-btn" id="tab-mosque" onclick="switchTab('mosque')">🕌 มัสยิด</button>
+            <button class="tab-btn" id="tab-zikr" onclick="switchTab('zikr')">💬 ซิกร์</button>
         </div>
 
-        <!-- Digital Tasbih Container -->
-        <div id="tasbihContainer" class="hidden bg-slate-800/80 border border-slate-700 p-4 rounded-2xl text-center relative z-10 mb-3">
-            <p class="text-xs text-amber-300 font-semibold mb-1">SubhanAllah (ซุบฮานัลลอฮ์)</p>
-            <div id="tasbihCount" class="text-5xl font-extrabold text-white my-3 tracking-wider">0</div>
-            <div class="flex gap-2 justify-center">
-                <button onclick="countTasbih()" class="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 rounded-xl text-xs transition shadow-lg active:scale-95" data-i18n="count_btn">👆 กดนับ</button>
-                <button onclick="resetTasbih()" class="bg-slate-700 hover:bg-slate-600 text-slate-
-                
+        <!-- TAB 1: QIBLA COMPASS -->
+        <div id="view-qibla" class="view-section card compass-box active">
+            <div style="font-size:15px; font-weight:bold;" id="qibla-head">🕋 ทิศกิบลัต (ทิศสู่นครมักกะฮ์)</div>
+            <div class="status-msg" id="gps-status">กดปุ่ม "เปิด GPS" ด้านบนเพื่อเริ่มใช้งาน</div>
+            <div class="compass-circle">
+                <div class="needle" id="needle-el"></div>
+            </div>
+            <div style="font-size:11px; color:#94a3b8;" id="qibla-tip">*หมุนโทรศัพท์เพื่อปรับทิศทาง</div>
+        </div>
+
+        <!-- TAB 2: HALAL RESTAURANTS -->
+        <div id="view-halal" class="view-section card">
+            <div style="font-size:14px; font-weight:bold; margin-bottom:10px;" id="halal-head">🍲 ร้านอาหารฮาลาลใกล้คุณ</div>
+            <div id="halal-container">
+                <div class="list-item">
+                    <strong>ร้านอาหาร อาอีซะฮ์ รสดี (บางลำพู)</strong>
+                    <span>ข้าวหมกไก่ ข้าวหมกเนื้อ ซุปหางวัว • เปิดบริการ</span>
+                </div>
+                <div class="list-item">
+                    <strong>ยูซุปโภชนา - ราชาข้าวหมก</strong>
+                    <span>ข้าวหมกไก่ย่าง ซุปเนื้อ • เปิดบริการ</span>
+                </div>
+                <div class="list-item">
+                    <strong>ไก่ย่าง จีระพันธ์ (พระราม 9)</strong>
+                    <span>ไก่ย่างฮาลาล ข้าวหมก อาหารอีสานฮาลาล • เปิดบริการ</span>
+                </div>
+            </div>
+            <button class="btn-more" id="btn-more-halal" onclick="openMap('halal')">🗺️ ดูเพิ่มเติมใน Google Maps</button>
+        </div>
+
+        <!-- TAB 3: MOSQUES -->
+        <div id="view-mosque" class="view-section card">
+            <div style="font-size:14px; font-weight:bold; margin-bottom:10px;" id="mosque-head">🕌 มัสยิดใกล้คุณ</div>
+            <div id="mosque-container">
+                <div class="list-item">
+                    <strong>มัสยิดฮี่ดาย่าตุ้ลอิสลาม (สามอิน - สุขุมวิท 71)</strong>
+                    <span>สถานที่ประกอบศาสนกิจ • ถ.สุขุมวิท 71</span>
+                </div>
+                <div class="list-item">
+                    <strong>มัสยิดนูรุ้ลอิบาดะห์ (หนองบอน)</strong>
+                    <span>สถานที่ประกอบศาสนกิจ • ซ.อ่อนนุช 70</span>
+                </div>
+                <div class="list-item">
+                    <strong>มัสยิดเราะห์ม่าตุ้ลอิสลาม (สวนหลวง ร.9)</strong>
+                    <span>สถานที่ประกอบศาสนกิจ • ซ.ศรีนครินทร์ 55</span>
+                </div>
+            </div>
+            <button class="btn-more" id="btn-more-mosque" onclick="openMap('mosque')">🗺️ ดูเพิ่มเติมใน Google Maps</button>
+        </div>
+
+        <!-- TAB 4: ZIKR COUNTER -->
+        <div id="view-zikr" class="view-section card zikr-box">
+            <div style="font-size:14px; font-weight:bold;" id="zikr-head">💬 เคาน์เตอร์นับซิกร์</div>
+            <div class="counter-num" id="counter-val">0</div>
+            <button class="btn-count" onclick="countZikr()">กดนับ (Tap)</button><br>
+            <button class="btn-reset" onclick="resetZikr()">รีเซ็ต</button>
+        </div>
+    </div>
+
+    <script>
+        var quranVerses = [
+            { ar: "فَٱذْكُرُونِيٓ أَذْكُرْكُمْ وَٱشْكُرُوا۟ لِي وَلَا تَكْفُرُونِ", th: "\"ดังนั้นพวกเจ้าจงรำลึกถึงข้า ข้าก็จะรำลึกถึงพวกเจ้า\" (อัล-บะเกาะเราะฮ์: 152)", en: "\"So remember Me; I will remember you.\" (Al-Baqarah: 152)", ms: "\"Ingatlah kepada-Ku, nescaya Aku ingat kepadamu.\" (Al-Baqarah: 152)" },
+            { ar: "إِنَّ مَعَ ٱلْعُسْرِ يُسْرًۭا", th: "\"แท้จริงพร้อมกับความยากลำบากนั้น มีความง่ายดาย\" (อัล-อินชิรอห์: 6)", en: "\"Indeed, with hardship will come ease.\" (Ash-Sharh: 6)", ms: "\"Sesungguhnya sesudah kesusahan itu ada kemudahan.\" (Ash-Sharh: 6)" },
+            { ar: "وَٱسْتَعِينُوا۟ بِٱلصَّبْرِ وَٱلصَّلَوٰةِ", th: "\"และจงขอความช่วยเหลือด้วยความอดทนและการละหมาด\" (อัล-บะเกาะเราะฮ์: 45)", en: "\"And seek help through patience and prayer.\" (Al-Baqarah: 45)", ms: "\"Dan mintalah pertolongan dengan sabar dan solat.\" (Al-Baqarah: 45)" },
+            { ar: "وَهُوَ مَعَكُمْ أَيْنَ مَا كُنتُمْ", th: "\"และพระองค์ทรงอยู่กับพวกเจ้าไม่ว่าพวกเจ้าจะอยู่ ณ ที่ใด\" (อัล-ฮะดีด: 4)", en: "\"And He is with you wherever you are.\" (Al-Hadid: 4)", ms: "\"Dan Dia bersama kamu di mana sahaja kamu berada.\" (Al-Hadid: 4)" },
+            { ar: "إِنَّ ٱللَّهَ مَعَ ٱلصَّـٰبِرِينَ", th: "\"แท้จริงอัลลอฮ์ทรงอยู่ร่วมกับผู้ที่อดทน\" (อัล-บะเกาะเราะฮ์: 153)", en: "\"Indeed, Allah is with the patient.\" (Al-Baqarah: 153)", ms: "\"Sesungguhnya Allah bersama orang-orang yang sabar.\" (Al-Baqarah: 153)" }
+        ];
+
+        var currentQuranIndex = Math.floor(Math.random() * quranVerses.length);
+        var currentLang = 'th';
+        var userLat = null;
+        var userLon = null;
+        var zikrCount = 0;
+
+        var dict = {
+            th: { sub: "Islamic Utility App", clockPrefix: "🕒 เวลาปัจจุบัน: ", gpsBanner: "📍 เปิด GPS เพื่อเชื่อมต่อพิกัดและทิศทางแม่นยำ", prayer: "🕌 เวลาละหมาดวันนี้", notifHead: "🔔 ตั้งค่าแจ้งเตือนเฉพาะเวลาละหมาด:", fajr: "ซุบฮี", dhuhr: "ซุฮริ", asr: "อัศริ", maghrib: "มักริบ", isha: "อิชาอ์", t1: "🧭 ทิศกิบลัต", t2: "🍲 ร้านฮาลาล", t3: "🕌 มัสยิด", t4: "💬 ซิกร์", qHead: "🕋 ทิศกิบลัต (ทิศสู่นครมักกะฮ์)", qTip: "*หมุนโทรศัพท์เพื่อปรับทิศทาง", hHead: "🍲 ร้านอาหารฮาลาลใกล้คุณ", mHead: "🕌 มัสยิดใกล้คุณ", zHead: "💬 เคาน์เตอร์นับซิกร์", zBtn: "กดนับ (Tap)", zReset: "รีเซ็ต", mapBtn: "🗺️ ดูเพิ่มเติมใน Google Maps" },
+            en: { sub: "Islamic Utility App", clockPrefix: "🕒 Current Time: ", gpsBanner: "📍 Enable GPS for location & direction", prayer: "🕌 Today's Prayer Times", notifHead: "🔔 Select Prayer Notifications:", fajr: "Fajr", dhuhr: "Dhuhr", asr: "Asr", maghrib: "Maghrib", isha: "Isha", t1: "🧭 Qibla", t2: "🍲 Halal Food", t3: "🕌 Mosques", t4: "💬 Zikr", qHead: "🕋 Qibla Direction (Towards Makkah)", qTip: "*Rotate phone to calibrate", hHead: "🍲 Nearby Halal Places", mHead: "🕌 Nearby Mosques", zHead: "💬 Zikr Counter", zBtn: "Tap to Count", zReset: "Reset", mapBtn: "🗺️ View More in Google Maps" },
+            ms: { sub: "Islamic Utility App", clockPrefix: "🕒 Masa Semasa: ", gpsBanner: "📍 Buka GPS untuk lokasi & arah", prayer: "🕌 Waktu Solat Hari Ini", notifHead: "🔔 Tetapan Pemberitahuan Solat:", fajr: "Subuh", dhuhr: "Zohor", asr: "Asar", maghrib: "Maghrib", isha: "Isyak", t1: "🧭 Kiblat", t2: "🍲 Makanan Halal", t3: "🕌 Masjid", t4: "💬 Zikir", qHead: "🕋 Arah Kiblat (Menuju Mekah)", qTip: "*Pusingkan telefon", hHead: "🍲 Makanan Halal Terdekat", mHead: "🕌 Masjid Terdekat", zHead: "💬 Pembilang Zikir", zBtn: "Tekan (Tap)", zReset: "Tetap Semula", mapBtn: "🗺️ Lihat Lagi di Google Maps" }
+        };
+
+        // สุ่มอายะฮ์อัลกุรอานอัตโนมัติ
+        var q = quranVerses[currentQuranIndex];
+        var elAr = document.getElementById('quran-ar');
+        var elTrans = document.getElementById('quran-trans');
+        if (elAr) elAr.innerText = q.ar;
+        if (elTrans) elTrans.innerText = q.th;
+
+        // อัปเดตเวลานาฬิกาเรียลไทม์
+        function updateClock() {
+            var now = new Date();
+            var hours = String(now.getHours()).padStart(2, '0');
+            var minutes = String(now.getMinutes()).padStart(2, '0');
+            var seconds = String(now.getSeconds()).padStart(2, '0');
+            var prefix = dict[currentLang] ? dict[currentLang].clockPrefix : "🕒 เวลาปัจจุบัน: ";
+            var clockEl = document.getElementById('live-clock');
+            if (clockEl) {
+                clockEl.innerText = prefix + hours + ':' + minutes + ':' + seconds;
+            }
+        }
+        setInterval(updateClock, 1000);
+
+        function switchTab(viewId) {
+            var views = document.querySelectorAll('.view-section');
+            for (var i = 0; i < views.length; i++) { views[i].classList.remove('active'); }
+            var tabs = document.querySelectorAll('.tab-btn');
+            for (var i = 0; i < tabs.length; i++) { tabs[i].classList.remove('active'); }
+            
+            var targetView = document.getElementById('view-' + viewId);
+            var targetTab = document.getElementById('tab-' + viewId);
+            if (targetView) targetView.classList.add('active');
+            if (targetTab) targetTab.classList.add('active');
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.getElementById('btn-th').classList.remove('active');
+            document.getElementById('btn-en').classList.remove('active');
+            document.getElementById('btn-ms').classList.remove('active');
+            document.getElementById('btn-' + lang).classList.add('active');
+
+            var d = dict[lang];
+            document.getElementById('txt-sub').innerText = d.sub;
+            document.getElementById('txt-prayer-title').innerText = d.prayer;
+            document.getElementById('txt-notif-head').innerText = d.notifHead;
+            document.getElementById('txt-gps-banner').innerText = d.gpsBanner;
+            
+            var curQ = quranVerses[currentQuranIndex];
+            document.getElementById('quran-trans').innerText = curQ[lang] || curQ.th;
+
+            document.getElementById('p-fajr').innerText = d.fajr;
+            document.getElementById('p-dhuhr').innerText = d.dhuhr;
+            document.getElementById('p-asr').innerText = d.asr;
+            document.getElementById('p-maghrib').innerText = d.maghrib;
+            document.getElementById('p-isha').innerText = d.isha;
+
+            document.getElementById('n-fajr').innerText = d.fajr;
+            document.getElementById('n-dhuhr').innerText = d.dhuhr;
+            document.getElementById('n-asr').innerText = d.asr;
+            document.getElementById('n-maghrib').innerText = d.maghrib;
+            document.getElementById('n-isha').innerText = d.isha;
+
+            document.getElementById('tab-qibla').innerText = d.t1;
+            document.getElementById('tab-halal').innerText = d.t2;
+            document.getElementById('tab-mosque').innerText = d.t3;
+            document.getElementById('tab-zikr').innerText = d.t4;
+            document.getElementById('qibla-head').innerText = d.qHead;
+            document.getElementById('qibla-tip').innerText = d.qTip;
+            document.getElementById('halal-head').innerText = d.hHead;
+            document.getElementById('mosque-head').innerText = d.mHead;
+            document.getElementById('zikr-head').innerText = d.zHead;
+            document.getElementById('btn-more-halal').innerText = d.mapBtn;
+            document.getElementById('btn-more-mosque').innerText = d.mapBtn;
+            updateClock();
+        }
+
+        function countZikr() {
+            zikrCount++;
+            document.getElementById('counter-val').innerText = zikrCount;
+        }
+
+        function resetZikr() {
+            zikrCount = 0;
+            document.getElementById('counter-val').innerText = zikrCount;
+        }
+
+        function openMap(type) {
+            var kw = encodeURIComponent(type === 'halal' ? 'ร้านอาหารฮาลาล' : 'มัสยิด');
+            var url = (userLat && userLon) 
+                ? 'https://www.google.com/maps/search/' + kw + '/@' + userLat + ',' + userLon + ',15z' 
+                : 'https://www.google.com/maps/search/' + kw;
+            window.open(url, '_blank');
+        }
+
+        function requestGPS() {
+            var status = document.getElementById('gps-status');
+            if (navigator.geolocation) {
+                status.innerText = currentLang === 'en' ? 'Locating...' : 'กำลังดึงพิกัด GPS...';
+                navigator.geolocation.getCurrentPosition(
+                    function(pos) {
+                        userLat = pos.coords.latitude;
+                        userLon = pos.coords.longitude;
+                        status.innerText = 'พิกัด GPS: ' + userLat.toFixed(4) + ', ' + userLon.toFixed(4);
+                        document.getElementById('needle-el').style.transform = 'rotate(290deg)';
+                        document.getElementById('txt-gps-banner').innerText = currentLang === 'en' ? '✅ GPS Connected' : '✅ เชื่อมต่อ GPS เรียบร้อยแล้ว';
+                    },
+                    function(err) {
+                        status.innerText = 'โปรดอนุญาตสิทธิ์ตำแหน่ง GPS ในเบราว์เซอร์';
+                        alert('โปรดอนุญาตสิทธิ์ GPS ในเบราว์เซอร์');
+                    }
+                );
+            }
+        }
+    </script>
+</body>
+</html>
