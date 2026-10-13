@@ -2,12 +2,14 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Halal Compass Pro</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: #0f172a; color: #f8fafc; padding: 15px; display: flex; justify-content: center; min-height: 100vh; }
-        .app-box { width: 100%; max-width: 400px; background-color: #1e293b; border-radius: 20px; padding: 18px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+        html, body { width: 100%; min-height: 100vh; background-color: #0f172a; color: #f8fafc; }
+        body { padding: 15px; display: flex; justify-content: center; align-items: flex-start; }
+        
+        .app-box { width: 100%; max-width: 400px; background-color: #1e293b; border-radius: 20px; padding: 18px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.6); display: block !important; }
         
         /* Quran Verse Box */
         .quran-box { background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%); border: 1px solid #3b82f6; padding: 12px; border-radius: 14px; text-align: center; margin-bottom: 15px; }
@@ -45,21 +47,4 @@
         .notif-item { display: flex; align-items: center; gap: 4px; background: #1e293b; padding: 4px 6px; border-radius: 6px; cursor: pointer; color: #cbd5e1; }
 
         /* Grid Menu (2x2, No Scrollbar) */
-        .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 15px; }
-        .tab-btn { background-color: #1e293b; border: 1px solid #475569; color: #cbd5e1; padding: 12px 10px; border-radius: 12px; font-size: 13px; font-weight: bold; cursor: pointer; text-align: center; }
-        .tab-btn.active { background-color: #3b82f6; color: #fff; border-color: #3b82f6; }
-
-        /* Views Content */
-        .view-section { display: none; }
-        .view-section.active { display: block; }
-
-        /* Compass */
-        .compass-box { text-align: center; padding: 10px 0; }
-        .compass-circle { width: 140px; height: 140px; border: 4px solid #3b82f6; border-radius: 50%; margin: 15px auto; position: relative; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #334155 0%, #1e293b 100%); }
-        .needle { width: 6px; height: 70px; background: linear-gradient(to top, #38bdf8, #fbbf24); position: absolute; transform-origin: bottom center; bottom: 50%; border-radius: 3px; transition: transform 0.2s ease; }
-        .status-msg { font-size: 12px; color: #38bdf8; margin-top: 5px; }
-
-        /* Location List Items */
-        .list-item { background: #1e293b; padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 13px; border-left: 3px solid #3b82f6; }
-        .list-item span { font-size: 11px; color: #94a3b8; display: block; margin-top: 2px; }
-        .btn-more { width
+        .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom:
